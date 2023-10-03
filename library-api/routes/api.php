@@ -24,3 +24,6 @@ Route::get('book-list', [LibraryController::class, 'index']);
 
 Route::post('add-book', [LibraryController::class, 'create']);
 
+Route::delete('remove-book/{id}', [LibraryController::class, 'destroy']);
+
+Route::put('update-book/{id}', [LibraryController::class, 'update']);
