@@ -16,12 +16,12 @@ return new class extends Migration
             $table->collation = 'utf8_general_ci';
 
             $table->id();
-            $table->timestamps();
             $table->string('title');
             $table->text('description');
             $table->text('image');
-            $table->text('reserved')->default('0');
-            $table->text('reserve_time')->nullable();
+            $table->text('author');
+            $table->boolean('reserved')->default(0);
+            $table->string('reserve_time')->nullable();
             $table->string('created_at');
             $table->string('updated_at');
         });
