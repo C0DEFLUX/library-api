@@ -15,7 +15,8 @@ class Books extends Model
         'description',
         'reserved',
         'reserve_time',
-        'image'
+        'image',
+        'user_id'
     ];
 
     protected $casts = [

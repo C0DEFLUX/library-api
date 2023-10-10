@@ -18,7 +18,7 @@ return new class extends Migration
             $table->id();
             $table->string('username');
             $table->string('password');
-            $table->string('token');
+            $table->string('token')->nullable();
             $table->string('created_at');
             $table->string('updated_at');
         });
