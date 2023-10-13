@@ -53,4 +53,6 @@ Route::post('verify-token', [UserController::class, 'verifyToken']);
 
 Route::post('find-by-token', [UserController::class, 'findByToken']);
 
+//Route::get('user-list', [UserController::class, 'index']);
+
 

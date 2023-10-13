@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Books;
+use App\Models\Users;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -233,42 +235,68 @@ class LibraryController extends Controller
         return response()->json($data);
     }
 
-    public function reserveBook(Request $request): JsonResponse
+    public function reserveBook(Request $request)
     {
         $id = $request->input('id');
         $uid = $request->input('uid');
         $time =  $request->input('time');
 
+        $maxDate = Carbon::now()->addYear();
+        $today = Carbon::today();
+        $time = Carbon::parse($time);
+
+        if($time->greaterThanOrEqualTo($maxDate)) {
+            return response()->json([
+                'message' => 'Reservation date is not valid!',
+                'status' => 403
+            ]);
+        }
+
+        if($time->lessThan($today)) {
+            return response()->json([
+                'message' => 'Reservation date is not valid!',
+                'status' => 403
+            ]);
+        }
+
+        $user = Users::where('id', '=', $uid)->first();
 
         DB::table('books')
             ->where('id', $id)
             ->update([
-                'user_id' => $uid,
+                'user' => $user->username,
                 'reserved' => 1,
                 'reserve_time' => $time
             ]);
 
-        return response()->json(['message' => 'Book reserved successfully!']);
+        return response()->json([
+            'message' => 'Book reserved successfully!',
+            'status' => 200
+        ]);
     }
 
     public function returnBook(Request $request): JsonResponse
     {
-        $uid = $request->input('uid');
-        $book = Books::where('user_id', $uid)->first();
+        $uid = $request->input('id');
 
-        $book->user_id = null;
-        $book->reserved = 0;
-        $book->reserve_time = null;
+        DB::table('books')
+            ->where('id', $uid)
+            ->update([
+                'user' => null,
+                'reserved' => 0,
+                'reserve_time' => null
+            ]);
 
-        $book->save();
-
-        return response()->json(['message' => 'Book returned successfully!']);
+        return response()->json([
+            'message' => 'Book returned successfully!',
+            'status' => 200
+        ]);
 
     }
 
-    public function reservedBooksById($id): JsonResponse
+    public function reservedBooksById($user): JsonResponse
     {
-        $data = Books::where('user_id', $id)->first();
+        $data = Books::where('user', $user)->get();
 
         return response()->json($data);
     }

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Books;
 use App\Models\Users;
-use http\Client\Curl\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -12,6 +11,13 @@ use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
+    public function index() {
+
+        $data = Users::all();
+
+        return response()->json($data);
+
+    }
     public function login(Request $request): JsonResponse
     {
 
@@ -71,75 +77,67 @@ class UserController extends Controller
         $user = htmlspecialchars(trim($request->input('username')));
         $pass = htmlspecialchars(trim($request->input('password')));
 
-        $err_arr = [
-            'user' => '',
-            'pass' => '',
+//        $err_arr = [
+//            'user' => '',
+//            'pass' => '',
+//        ];
 
+        $data = [
+            'user' => $user,
+            'pass' => $pass,
+            'user_err' => '',
+            'pass_err' => '',
         ];
 
         if(empty($user))
         {
-            $err_arr['user'] = 'Please fill out username  field!';
+            $data['user_err'] = 'Please fill out username  field!';
         }
         if(empty($pass))
         {
-            $err_arr['pass'] = 'Please fill out password field!';
+            $data['pass_err'] = 'Please fill out password field!';
         }
 
-        //Check if errors are empty
-        if(!empty($err_arr['user']) || !empty($err_arr['pass']))
-        {
 
-            //Return text error message
-            return response()->json([
-                'error' => $err_arr,
-                'status' => 403
-            ]);
-        }
-
-        $lenght_err_arr = [
-            'user' => '',
-            'pass' => '',
-        ];
         //Set a max length for text fields
         if(strlen($user) > 10)
         {
-            $lenght_err_arr['user'] = "Username can't be more than 10 characters";
+            $data['user_err'] = "Username can't be more than 10 characters";
         }
         if(strlen($pass) > 30)
         {
-            $lenght_err_arr['pass'] = "Password can't be more than 30 characters";
-        }
-        if(!empty($lenght_err_arr['user']) || !empty($lenght_err_arr['pass']))
-        {
-            return response()->json([
-                'error' => $lenght_err_arr,
-                'status' => 403
-            ]);
+            $data['pass_err'] = "Password can't be more than 30 characters";
         }
 
         if(Users::where('username', '=', $user)->exists())
         {
+            $data['user_err'] = "Username already exists!";
+        }
+
+        //Check if errors are empty
+        if(empty($data['user_err']) || empty($data['pass_err']))
+        {
+            //Hash password
+            $hashed_pass = Hash::make($pass);
+
+            //Final data for db
+            $data = [
+                'username' => $user,
+                'password' => $hashed_pass
+            ];
+
+            Users::create($data);
+
             return response()->json([
-                'error' => 'Username is taken!',
-                'status' => 403
+                'message' => 'Registered successfully!',
+                'status' => 200,
             ]);
         }
 
-        //Hash password
-        $hashed_pass = Hash::make($pass);
-
-        //Final data for db
-        $data = [
-            'username' => $user,
-            'password' => $hashed_pass
-        ];
-
-        Users::create($data);
-
         return response()->json([
-           'message' => 'Registered successfully!',
-           'status' => 200,
+            'user_err' => $data['user_err'],
+            'pass_err' => $data['pass_err'],
+            'status' => 403
         ]);
     }
 

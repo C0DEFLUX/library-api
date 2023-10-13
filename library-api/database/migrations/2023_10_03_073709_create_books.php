@@ -20,7 +20,7 @@ return new class extends Migration
             $table->text('description');
             $table->text('image');
             $table->text('author');
-            $table->text('user_id')->nullable();
+            $table->text('user')->nullable();
             $table->boolean('reserved')->default(0);
             $table->string('reserve_time')->nullable();
             $table->string('created_at');
